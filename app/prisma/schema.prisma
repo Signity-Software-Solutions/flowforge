@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ERROR
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  ERROR
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  avatarUrl String?  @map("avatar_url")
+  role      UserRole @default(ADMIN)
+  createdAt DateTime @default(now()) @map("created_at")
+  lastLogin DateTime? @map("last_login")
+
+  workflows  Workflow[]
+  executions Execution[]
+  apiKeys    ApiKey[]
+  auditLogs  AuditLog[]
+
+  @@map("users")
+}
+
+model Workflow {
+  id                    String         @id @default(uuid())
+  name                  String
+  description           String?
+  nodes                 Json           @default("[]")
+  edges                 Json           @default("[]")
+  n8nWorkflowJson       Json?          @map("n8n_workflow_json")
+  n8nWorkflowId         String?        @map("n8n_workflow_id")
+  status                WorkflowStatus @default(DRAFT)
+  estimatedManualMinutes Int?          @map("estimated_manual_minutes")
+  currentVersion        Int            @default(1) @map("current_version")
+  isTemplate            Boolean        @default(false) @map("is_template")
+  templateCategory      String?        @map("template_category")
+  triggerType           String?        @map("trigger_type")
+  triggerConfig         Json?          @map("trigger_config")
+  createdById           String         @map("created_by_id")
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
+  lastExecutedAt        DateTime?      @map("last_executed_at")
+
+  createdBy  User          @relation(fields: [createdById], references: [id])
+  executions Execution[]
+  versions   WorkflowVersion[]
+
+  @@map("workflows")
+}
+
+model WorkflowVersion {
+  id              String   @id @default(uuid())
+  workflowId      String   @map("workflow_id")
+  versionNumber   Int      @map("version_number")
+  nodes           Json     @default("[]")
+  edges           Json     @default("[]")
+  n8nWorkflowJson Json?    @map("n8n_workflow_json")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, versionNumber])
+  @@map("workflow_versions")
+}
+
+model Execution {
+  id              String          @id @default(uuid())
+  workflowId      String          @map("workflow_id")
+  n8nExecutionId  String?         @map("n8n_execution_id")
+  status          ExecutionStatus @default(PENDING)
+  triggerData     Json?           @map("trigger_data")
+  startedAt       DateTime        @default(now()) @map("started_at")
+  finishedAt      DateTime?       @map("finished_at")
+  durationMs      Int?            @map("duration_ms")
+  estimatedCost   Float?          @map("estimated_cost")
+  errorMessage    String?         @map("error_message")
+  triggeredById   String?         @map("triggered_by_id")
+
+  workflow  Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  triggeredBy User?         @relation(fields: [triggeredById], references: [id])
+  steps     ExecutionStep[]
+
+  @@map("executions")
+}
+
+model ExecutionStep {
+  id          String          @id @default(uuid())
+  executionId String          @map("execution_id")
+  nodeName    String          @map("node_name")
+  nodeType    String          @map("node_type")
+  status      ExecutionStatus @default(PENDING)
+  inputData   Json?           @map("input_data")
+  outputData  Json?           @map("output_data")
+  durationMs  Int?            @map("duration_ms")
+  errorMessage String?        @map("error_message")
+  retryCount  Int             @default(0) @map("retry_count")
+  order       Int             @default(0)
+
+  execution Execution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  @@map("execution_steps")
+}
+
+model Integration {
+  id           String   @id @default(uuid())
+  name         String
+  slug         String   @unique
+  description  String?
+  category     String
+  icon         String?
+  authType     String   @map("auth_type")
+  isConnected  Boolean  @default(false) @map("is_connected")
+  config       Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("integrations")
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  keyHash   String   @map("key_hash")
+  keyPrefix String   @map("key_prefix")
+  scopes    String[] @default(["read", "write", "execute"])
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime? @map("expires_at")
+  lastUsedAt DateTime? @map("last_used_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  action       String
+  resourceType String   @map("resource_type")
+  resourceId   String?  @map("resource_id")
+  details      Json?
+  ipAddress    String?  @map("ip_address")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
