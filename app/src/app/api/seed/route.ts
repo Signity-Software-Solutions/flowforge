@@ -5,13 +5,27 @@ import { hashPassword } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  // Seeding is opt-in outside local development: set ALLOW_SEED="true" to enable it,
+  // and unset it again afterwards.
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_SEED !== "true") {
+    return NextResponse.json({ success: false, error: "Seeding is disabled" }, { status: 403 });
+  }
+
+  const adminEmail = process.env.SEED_ADMIN_EMAIL;
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!adminEmail || !adminPassword) {
+    return NextResponse.json(
+      { success: false, error: "SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD must be set" },
+      { status: 400 }
+    );
+  }
+
   try {
     // ── 1. Seed admin user ──────────────────────────────────────────────
-    const adminEmail = "admin@flowforge.io";
     let admin = await prisma.user.findUnique({ where: { email: adminEmail } });
 
     if (!admin) {
-      const hashed = await hashPassword("LetsBuildGreatThings@123");
+      const hashed = await hashPassword(adminPassword);
       admin = await prisma.user.create({
         data: {
           email: adminEmail,
@@ -321,7 +335,7 @@ export async function GET() {
   } catch (error) {
     console.error("Seed error:", error);
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { success: false, error: "Seeding failed. See server logs." },
       { status: 500 }
     );
   }

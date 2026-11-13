@@ -18,13 +18,20 @@ export function getAuthOptions(): NextAuthOptions {
             return null;
           }
 
+          // Optional database-free sign-in for local development only.
+          // Enabled solely when both env vars are set and NODE_ENV is not "production".
+          const devEmail = process.env.DEV_ADMIN_EMAIL;
+          const devPassword = process.env.DEV_ADMIN_PASSWORD;
           if (
-            credentials.email === "admin@flowforge.io" &&
-            credentials.password === "LetsBuildGreatThings@123"
+            process.env.NODE_ENV !== "production" &&
+            devEmail &&
+            devPassword &&
+            credentials.email === devEmail &&
+            credentials.password === devPassword
           ) {
             return {
               id: "admin-001",
-              email: "admin@flowforge.io",
+              email: devEmail,
               name: "Admin",
               role: "ADMIN",
             };
@@ -67,7 +74,7 @@ export function getAuthOptions(): NextAuthOptions {
       async jwt({ token, user }) {
         if (user) {
           token.id = user.id;
-          token.role = (user as { role: string }).role;
+          token.role = (user as unknown as { role: string }).role;
         }
         return token;
       },
