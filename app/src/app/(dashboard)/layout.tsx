@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { DEMO_MODE } from "@/lib/demo/config";
+import { DemoWorkspace } from "@/components/demo/DemoWorkspace";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,8 @@ export default function DashboardLayout({
     Object.entries(pageTitles).find(([path]) =>
       pathname.startsWith(path)
     )?.[1] || "FlowForge";
+
+  if (DEMO_MODE) return <Suspense fallback={<div className="p-8 text-sm">Preparing demo…</div>}><DemoWorkspace /></Suspense>;
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">

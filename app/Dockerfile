@@ -15,6 +15,7 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+ENV NEXT_PUBLIC_DEMO_MODE=true
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*

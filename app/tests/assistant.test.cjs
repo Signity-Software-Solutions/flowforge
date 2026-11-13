@@ -1,0 +1,6 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript');
+require.extensions['.ts']=(module,file)=>module._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,file);
+const {workflowAnswer}=require('../src/lib/demo/assistant.ts'),{WORKFLOWS}=require('../src/lib/demo/catalog.ts'),{simulateWorkflow}=require('../src/lib/demo/engine.ts');
+test('assistant scopes reports and does not run or modify workflows',()=>{const ws=structuredClone(WORKFLOWS),runs=ws.map(w=>simulateWorkflow(w,w.input)),before=JSON.stringify([ws,runs]);const a=workflowAnswer(ws,runs,[],ws[0].id,'Run performance report');assert.equal(a.rows.length,1);assert.equal(workflowAnswer(ws,runs,[],ws[0].id,'Prepare test run').prepareId,ws[0].id);assert.equal(JSON.stringify([ws,runs]),before);});
+test('invalid workflow scope cannot fall back to workspace data',()=>{assert.match(workflowAnswer(WORKFLOWS,[],[],'unknown','Run report').title,/unavailable/);});
+test('disconnected virtual providers are reported as unavailable',()=>{const w=WORKFLOWS[0];assert.ok(workflowAnswer(WORKFLOWS,[],[w.providers[0]],w.id,'Connection readiness').rows.some(r=>r[2]==='Disconnected'));});

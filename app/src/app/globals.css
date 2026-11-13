@@ -1,8 +1,8 @@
+@import "@xyflow/react/dist/style.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import "@xyflow/react/dist/style.css";
 
 @layer base {
   :root {
@@ -34,4 +34,11 @@ body {
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@layer components {
+  .demo-eyebrow { @apply text-[10px] uppercase tracking-[.18em] font-semibold text-blue-600 mb-2; }
+  .demo-heading { @apply text-2xl md:text-3xl font-semibold tracking-tight text-slate-900; }
+  .demo-subtitle { @apply text-sm text-slate-500 leading-7 mt-3 max-w-3xl; }
+  .demo-input { @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-300; }
 }

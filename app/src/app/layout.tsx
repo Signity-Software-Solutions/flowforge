@@ -1,9 +1,8 @@
+import { DEMO_MODE } from "@/lib/demo/config";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/shared/SessionProvider";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: "FlowForge Live",
@@ -17,8 +16,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
-        <SessionProvider>{children}</SessionProvider>
+      <body className="font-sans antialiased">
+        {DEMO_MODE ? children : <SessionProvider>{children}</SessionProvider>}
       </body>
     </html>
   );

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 interface RouteContext {
@@ -60,7 +61,7 @@ export async function POST(
         inputData: { nodeId: node.id },
         outputData: success
           ? { result: `Processed by ${node.data?.label ?? "node"}` }
-          : null,
+          : Prisma.JsonNull,
         durationMs,
         errorMessage: success ? null : `Simulated error in ${node.data?.label ?? "node"}`,
         order: i,

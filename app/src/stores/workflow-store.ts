@@ -72,7 +72,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   onNodesChange: (changes) => {
     set({
       nodes: applyNodeChanges(changes, get().nodes) as WorkflowNode[],
-      isDirty: true,
+      isDirty: get().isDirty || changes.some(change => change.type !== "select" && change.type !== "dimensions"),
     });
   },
 
