@@ -1,37 +1,55 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
+# ── Dependencies ─────────────────────────────────────────────
+node_modules/
+.pnp
 .pnp.js
 .yarn/install-state.gz
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
+# ── Environment & secrets (only the *.example template is tracked) ──
+.env
+.env.*
+!.env.example
 *.pem
+*.key
 
-# debug
+# ── Build output & generated files ───────────────────────────
+.next/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+.turbo
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
-.env
+# ── OS / editor files ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
 
-# vercel
-.vercel
+# ── AI-assistant tooling (Claude Code, Codex) ────────────────
+.claude/
+CLAUDE.local.md
+.codex-*/
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ── Presentation build scratch (not used by the app) ─────────
+.presentation-build/
+.scribemd-deck-build/
+
+# ── Deliverables: keep FlowForge assets only ─────────────────
+# Other portfolio projects' decks/screenshots stay on disk but out of Git.
+deliverables/*
+!deliverables/FlowForge_Client_Demo.pptx
+!deliverables/ProposalForge_Portfolio/
+deliverables/ProposalForge_Portfolio/*
+!deliverables/ProposalForge_Portfolio/01_FlowForge_Portfolio.md
+!deliverables/Contextual_Assistants/
+deliverables/Contextual_Assistants/*
+!deliverables/Contextual_Assistants/FlowForge-assistant.jpg
